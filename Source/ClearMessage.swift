@@ -50,48 +50,16 @@ public class ClearMessage: Message {
     ///
     /// - Parameters:
     ///   - key: Public key to encrypt the clear message with
-    ///   - padding: Padding to use during the encryption
+    ///   - algorithm: Algorithm to use during the encryption
     /// - Returns: Encrypted message
     /// - Throws: SwiftyRSAError
-    public func encrypted(with key: PublicKey, padding: Padding) throws -> EncryptedMessage {
-        
-        let blockSize = SecKeyGetBlockSize(key.reference)
-        
-        var maxChunkSize: Int
-        switch padding {
-        case []:
-            maxChunkSize = blockSize
-        case .OAEP:
-            maxChunkSize = blockSize - 42
-        default:
-            maxChunkSize = blockSize - 11
+    public func encrypted(with key: PublicKey, algorithm: Algorithm) throws -> EncryptedMessage {
+        var error: Unmanaged<CFError>? = nil
+        let _encryptedData = SecKeyCreateEncryptedData(key.reference, algorithm, data as NSData, &error)
+        guard error == nil, let encryptedData = _encryptedData as Data? else {
+            throw SwiftyRSAError.chunkEncryptFailed
         }
         
-        var decryptedDataAsArray = [UInt8](repeating: 0, count: data.count)
-        (data as NSData).getBytes(&decryptedDataAsArray, length: data.count)
-        
-        var encryptedDataBytes = [UInt8](repeating: 0, count: 0)
-        var idx = 0
-        while idx < decryptedDataAsArray.count {
-            
-            let idxEnd = min(idx + maxChunkSize, decryptedDataAsArray.count)
-            let chunkData = [UInt8](decryptedDataAsArray[idx..<idxEnd])
-            
-            var encryptedDataBuffer = [UInt8](repeating: 0, count: blockSize)
-            var encryptedDataLength = blockSize
-            
-            let status = SecKeyEncrypt(key.reference, padding, chunkData, chunkData.count, &encryptedDataBuffer, &encryptedDataLength)
-            
-            guard status == noErr else {
-                throw SwiftyRSAError.chunkEncryptFailed(index: idx)
-            }
-            
-            encryptedDataBytes += encryptedDataBuffer
-            
-            idx += maxChunkSize
-        }
-        
-        let encryptedData = Data(bytes: encryptedDataBytes, count: encryptedDataBytes.count)
         return EncryptedMessage(data: encryptedData)
     }
     

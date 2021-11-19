@@ -22,8 +22,8 @@ public enum SwiftyRSAError: Error {
     case invalidAsn1RootNode
     case invalidAsn1Structure
     case invalidBase64String
-    case chunkDecryptFailed(index: Int)
-    case chunkEncryptFailed(index: Int)
+    case chunkDecryptFailed
+    case chunkEncryptFailed
     case stringToDataConversionFailed
     case dataToStringConversionFailed
     case invalidDigestSize(digestSize: Int, maxChunkSize: Int)
@@ -59,10 +59,10 @@ public enum SwiftyRSAError: Error {
             return "Couldn't parse the provided key because it has an unexpected ASN1 structure"
         case .invalidBase64String:
             return "The provided string is not a valid Base 64 string"
-        case .chunkDecryptFailed(let index):
-            return "Couldn't decrypt chunk at index \(index)"
-        case .chunkEncryptFailed(let index):
-            return "Couldn't encrypt chunk at index \(index)"
+        case .chunkDecryptFailed:
+            return "Couldn't decrypt chunk"
+        case .chunkEncryptFailed:
+            return "Couldn't encrypt chunk"
         case .stringToDataConversionFailed:
             return "Couldn't convert string to data using specified encoding"
         case .dataToStringConversionFailed:

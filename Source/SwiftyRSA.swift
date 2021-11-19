@@ -10,6 +10,7 @@
 import Foundation
 import Security
 
+public typealias Algorithm = SecKeyAlgorithm
 public typealias Padding = SecPadding
 
 public enum SwiftyRSA {
